@@ -3,6 +3,7 @@
 class WorkOut {
   date = new Date();
   id = (Date.now() + '').slice(-10);
+  clicks = 0;
   constructor(coords, distance, duration) {
     // this.date = ...
     // this.id = ...
@@ -17,7 +18,10 @@ class WorkOut {
 
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
-    } ${this.date.getDate}`;
+    } ${this.date.getDate()}`;
+  }
+  click() {
+    this.clicks++;
   }
 }
 
@@ -60,6 +64,7 @@ class Cycling extends WorkOut {
 ///////////////////////////////////////////////////////////
 // Application Architecture
 
+const resetBtn = document.querySelector('#reset_button');
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
@@ -70,13 +75,22 @@ const inputElevation = document.querySelector('.form__input--elevation');
 
 class App {
   #map;
+  #mapZoomLavel = 13;
   #mapEvent;
   #workouts = [];
 
   constructor() {
+    // Get user position
     this._getPosition();
+
+    // Get data from the lacal storage
+    this._getLocalStorage();
+
+    // At6teche event handlers
     form.addEventListener('submit', this._newWorkOut.bind(this));
     inputType.addEventListener('change', this._toggleElevatinField);
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    // resetBtn.addEventListener('click',this._resetButton)
   }
 
   _getPosition() {
@@ -95,7 +109,7 @@ class App {
     let { longitude } = position.coords;
     let coords = [latitude, longitude];
 
-    this.#map = L.map('map').setView(coords, 13);
+    this.#map = L.map('map').setView(coords, this.#mapZoomLavel);
 
     // console.log(map);
 
@@ -106,6 +120,10 @@ class App {
 
     // Handling clicks on map
     this.#map.on('click', this._showForm.bind(this));
+
+    this.#workouts.forEach(work => {
+      this._randerWokoutMarker(work);
+    });
   }
 
   _showForm(mapE) {
@@ -113,11 +131,28 @@ class App {
     form.classList.remove('hidden');
     inputDistance.focus();
   }
+  _hideForm() {
+    //Emptybinputs
+    inputDistance.value =
+      inputDuration.value =
+      inputCadence.value =
+      inputElevation.value =
+        '';
+    //Hide form
+    form.style.display = 'none';
+    form.classList.add('hidden');
+    setTimeout(() => (form.style.display = 'grid'), 1000);
+  }
 
   _toggleElevatinField() {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
+  
+  // _resetButton(){
+  //   localStorage.removeItem('workuots');
+  //   console.log('ha chal gaya');
+  // }
 
   _newWorkOut(e) {
     const validInputs = (...inputs) =>
@@ -165,7 +200,6 @@ class App {
 
     // Add new object to workout arrray
     this.#workouts.push(workout);
-    console.log(workout);
 
     // Rander workout on map as marker
     this._randerWokoutMarker(workout);
@@ -174,11 +208,10 @@ class App {
     this._randerWorkout(workout);
 
     // Hide the form + Clear input field
-    inputDistance.value =
-      inputDuration.value =
-      inputCadence.value =
-      inputElevation.value =
-        '';
+    this._hideForm();
+
+    // Set local storage to all workout
+    this._setLocalStorage();
   }
   _randerWokoutMarker(workout) {
     L.marker(workout.coords)
@@ -192,13 +225,13 @@ class App {
           className: `${workout.type}-popup`,
         })
       )
-      .setPopupContent('workout')
+      .setPopupContent(
+        `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'} ${workout.description}`
+      )
       .openPopup();
   }
 
   _randerWorkout(workout) {
-    // let html = `<h1>hello Pritam singh</h1>`;
-    console.log('ha chal raha hai');
     let html = `
         <li class="workout workout--${workout.type}" data-id="${workout.id}">
           <h2 class="workout__title">${workout.description}</h2>
@@ -246,7 +279,44 @@ class App {
         `;
     }
     form.insertAdjacentHTML('afterend', html);
-    console.log('h bhai yanha  hi chal raha he');
+  }
+  _moveToPopup(e) {
+    const workoutEle = e.target.closest('.workout');
+    // console.log(workoutEle);
+    if (!workoutEle) return;
+
+    const workout = this.#workouts.find(
+      work => work.id === workoutEle.dataset.id
+    );
+
+    console.log(workout);
+    this.#map.setView(workout.coords, this.#mapZoomLavel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+    // using th e public interface
+    // workout.click();
+  }
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach(work => {
+      this._randerWorkout(work);
+    });
+  }
+  reset() {
+    localStorage.removeItem('workuots');
+    location.reload();
   }
 }
 

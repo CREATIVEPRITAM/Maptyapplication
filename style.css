@@ -48,6 +48,20 @@ a:visited {
   display: flex;
   flex-direction: column;
 }
+.logo_reset--button{
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+#reset_button{
+  align-self: first baseline;
+  height: 5.2rem;
+  width: 10.2rem;
+  align-self: center;
+  margin-bottom: 4rem;
+  font-size: 20px;
+  font-weight: 600;
+}
 
 .logo {
   height: 5.2rem;
