@@ -57,10 +57,6 @@ class Cycling extends WorkOut {
   }
 }
 
-// const run1 = new Running([39, -12], 5.2, 24, 170);
-// const cycling1 = new Cycling([39, -12], 27, 95, 523);
-// console.log(run1, cycling1)
-
 ///////////////////////////////////////////////////////////
 // Application Architecture
 
@@ -148,7 +144,7 @@ class App {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
-  
+
   // _resetButton(){
   //   localStorage.removeItem('workuots');
   //   console.log('ha chal gaya');
@@ -321,3 +317,20 @@ class App {
 }
 
 const app = new App();
+
+// let p = 'this is the first line';
+// console.log(p);
+// p = 'this is the second line';
+// alert(p);
+// p = 'this is the third line';
+// console.log(p);
+
+let p = 'this is the first line';
+console.log(p);
+setTimeout(() => {
+  p = 'this is the second line';
+alert(p);
+}, 3000);
+p = 'this is the third line';
+console.log(p);
+
