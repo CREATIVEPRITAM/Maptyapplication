@@ -332,5 +332,4 @@ setTimeout(() => {
 alert(p);
 }, 3000);
 p = 'this is the third line';
-console.log(p);
 
